@@ -1,0 +1,20 @@
+FROM python:3-alpine
+
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositories
+
+RUN apk update && apk add --no-cache bash chromium chromium-chromedriver
+
+ADD ./app /app
+
+ADD ./docker/crontab/ /etc/crontabs/
+RUN chmod +x /etc/crontabs/crontab.cron
+RUN mv /etc/crontabs/crontab.cron /etc/crontabs/root
+
+RUN chmod +x /etc/crontabs/get_movie.sh
+
+WORKDIR /app
+
+RUN pip install -i http://mirrors.aliyun.com/pypi/simple/ --trusted-host mirrors.aliyun.com --no-cache-dir -r requirements.txt
+
+CMD ["/usr/sbin/crond", "-f", "-d", "0"]
+
